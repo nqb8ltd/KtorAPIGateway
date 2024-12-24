@@ -18,6 +18,19 @@ application {
 repositories {
     mavenCentral()
 }
+ktor{
+    docker{
+        jreVersion.set(JavaVersion.VERSION_19)
+        localImageName.set("api/gateway")
+        portMappings.set(listOf(
+            io.ktor.plugin.features.DockerPortMapping(
+                6060,
+                8080,
+                io.ktor.plugin.features.DockerPortMappingProtocol.TCP
+            )
+        ))
+    }
+}
 
 dependencies {
     implementation(libs.ktor.server.core)
