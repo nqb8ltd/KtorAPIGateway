@@ -18,8 +18,19 @@ application {
 repositories {
     mavenCentral()
 }
+jib{
+    from {
+        platforms{
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
+    }
+}
 ktor{
     docker{
+        this.
         jreVersion.set(JavaVersion.VERSION_21)
         localImageName.set("api/gateway")
         portMappings.set(listOf(
