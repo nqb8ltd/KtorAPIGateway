@@ -20,7 +20,7 @@ repositories {
 }
 ktor{
     docker{
-        jreVersion.set(JavaVersion.VERSION_19)
+        jreVersion.set(JavaVersion.VERSION_21)
         localImageName.set("api/gateway")
         portMappings.set(listOf(
             io.ktor.plugin.features.DockerPortMapping(
