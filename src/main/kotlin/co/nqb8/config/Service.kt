@@ -62,7 +62,11 @@ sealed class AuthenticationPolicy {
 data class JwtPolicy(
     override val policy: Policy,
     val jwtSecret: String,
-    override val check: String = "userId",
+    val data: String,
+    val permissionsKey: String,
+    val permissions: List<String> = listOf(),
+    override val check: String = "",
+    val checkPath: String = "",
 ): AuthenticationPolicy()
 
 @Serializable

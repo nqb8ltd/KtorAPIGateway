@@ -3,6 +3,7 @@ package co.nqb8.auth
 import co.nqb8.config.AuthenticationPolicy
 import co.nqb8.config.JwtPolicy
 import co.nqb8.config.KeyPolicy
+import co.nqb8.utils.pickIdIndex
 import co.nqb8.utils.uriMatches
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -38,12 +39,34 @@ suspend fun authorize(call: ApplicationCall, policy: AuthenticationPolicy, uri: 
     when (policy) {
         is JwtPolicy -> {
             val decoded = call.attributes[GatewayJWTAuthForCallKey]
-            println()
-            println(decoded.claims)
-            println(decoded.getClaim(policy.check).asString())
-            println()
-            val routeClaim = decoded.getClaim(uri).asList(String::class.java)
-            if (routeClaim == null || !routeClaim.contains(method)) {
+            val data = decoded.getClaim(policy.data).asMap()
+            if (data == null) {
+                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid token"))
+                return
+            }
+            val toVerify = policy.check.split(".")
+            var check = data
+            var toCheck = ""
+            toVerify.forEach {
+                when(val result = check[it]){
+                    is Map<*, *> -> { check = result as Map<String, Any> }
+                    else -> {
+                        toCheck = result.toString()
+                    }
+                }
+            }
+
+            val checkIndex = Url(uri).pickIdIndex(policy.checkPath)
+            if (checkIndex != -1){
+                val checkData = Url(call.request.uri).segments[checkIndex]
+                if (toCheck != checkData){
+                    call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not have required permission"))
+                    return
+                }
+            }
+
+            val permissions = decoded.getClaim(policy.permissionsKey).asList(String::class.java)
+            if (permissions == null || !permissions.containsAll(policy.permissions)) {
                 call.respond(HttpStatusCode.Forbidden, mapOf("error" to "You do not have required permission"))
                 return
             }

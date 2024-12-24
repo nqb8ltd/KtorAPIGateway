@@ -91,3 +91,6 @@ fun uriMatches(registeredUri: String, callUri: String): Boolean{
     }
     return callUrl == registered.toList()
 }
+fun Url.pickIdIndex(path: String): Int{
+    return segments.indexOf(path)
+}
