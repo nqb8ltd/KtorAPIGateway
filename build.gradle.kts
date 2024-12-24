@@ -1,0 +1,48 @@
+
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ktor)
+    alias(libs.plugins.serialization)
+}
+
+group = "co.nqb8"
+version = "0.0.1"
+
+application {
+    mainClass.set("io.ktor.server.netty.EngineMain")
+
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.host.common)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.csrf)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.logback.classic)
+    implementation(libs.ktor.server.neg)
+    implementation(libs.ktor.server.json)
+    implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.rate.limit)
+
+    implementation(libs.rabbitmq)
+
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.json)
+    implementation(libs.ktor.client.neg)
+
+
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlin.test.junit)
+}

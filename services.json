@@ -1,0 +1,106 @@
+[
+  {
+    "name": "parcel",
+    "baseUrl": "http://localhost:8081",
+    "routes": [
+      {
+        "uri": "/parcel",
+        "methods": ["POST"]
+      }
+    ]
+  },
+  {
+    "name": "payment",
+    "baseUrl": "http://127.0.0.1:8082",
+    "message_queue": {
+      "host": "localhost",
+      "port": 5672
+    },
+    "routes": [
+      {
+        "uri": "/user/{userId}",
+        "methods": ["POST"],
+        "authentication_policy": {
+          "type": "KeyPolicy",
+          "policy": "VERIFY",
+          "verifyEndpoint": "http://127.0.0.1:8082/verify-key",
+          "keyHeader": "secret",
+          "permissionsKeys": ["paths", "methods"]
+        }
+      },
+      {
+        "uri": "/wallet-top",
+        "methods": ["POST"]
+      },
+      {
+        "uri": "/balance/{id}",
+        "methods": ["GET"]
+      },
+      {
+        "uri": "/pay",
+        "methods": ["POST", "PUT", "DELETE"]
+      },
+      {
+        "uri": "/register",
+        "methods": ["POST"],
+        "queue": "register-parcel",
+        "authentication_policy": {
+          "type": "KeyPolicy",
+          "policy": "VERIFY",
+          "verifyEndpoint": "http://127.0.0.1:8082/verify-key",
+          "keyHeader": "secret",
+          "permissionsKeys": ["paths", "methods"]
+        }
+      }
+    ]
+  },
+  {
+    "name": "dilivva",
+    "baseUrl": "http://127.0.0.1:8000/api/v1",
+    "aggregates": [
+      {
+        "uri": "/users/{userId}",
+        "authentication_policy": {
+          "type": "JwtPolicy",
+          "policy": "VERIFY",
+          "check": "userId",
+          "jwtSecret": "CymZstRCOoRyNxGRdcQkRLp1sj1mbnsuEbQSrM916I82KBkwDDTezg8HcCPwbOuH"
+        },
+        "routes": [
+          {
+            "uri": "/users/{userId}/orders?status={status}&sort={desc}&per_page={count}",
+            "tag": "orders",
+            "methods": null,
+            "baseUrl": null
+          },
+          {
+            "uri": "/users/{userId}",
+            "tag": "profile"
+          }
+        ]
+      }
+    ],
+    "routes": [
+      {
+        "uri": "/new-pricing",
+        "methods": ["POST"]
+      },
+      {
+        "uri": "/sizes",
+        "methods": ["GET"]
+      },
+      {
+        "uri": "/misc/hubs",
+        "methods": ["GET"]
+      },
+      {
+        "uri": "/login",
+        "methods": ["POST"]
+      },
+      {
+        "uri": "/users/{id}/orders",
+        "methods": ["POST"]
+      }
+    ]
+  }
+]
