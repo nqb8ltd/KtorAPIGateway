@@ -27,6 +27,12 @@ jib{
             }
         }
     }
+    container{
+        ports = listOf("8080")
+        val API_KEY: String? = project.properties.get("API_KEY") as String?
+        println("Key: $API_KEY")
+        environment = mapOf("API_KEY" to API_KEY)
+    }
 }
 ktor{
     docker{

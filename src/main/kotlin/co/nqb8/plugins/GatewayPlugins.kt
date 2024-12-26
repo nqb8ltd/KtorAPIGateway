@@ -6,6 +6,7 @@ import co.nqb8.ratelimiter.GatewayRateLimit
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
@@ -23,6 +24,20 @@ fun Application.configurePlugins() {
 private fun Application.auth(){
     install(GatewayAuthentication)
     install(GatewayAuthorization)
+    val apikey = environment.config.property("gateway.apikey").getString()
+    install(Authentication) {
+
+        bearer("gateway-auth") {
+            realm = "Access to the '/_' path"
+            authenticate { tokenCredential ->
+                if (tokenCredential.token == apikey) {
+                    UserIdPrincipal("verified")
+                } else {
+                    null
+                }
+            }
+        }
+    }
 }
 private fun Application.cors() {
     install(CORS)

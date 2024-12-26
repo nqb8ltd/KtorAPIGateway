@@ -10,6 +10,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 import io.ktor.client.call.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.util.collections.*
 import kotlinx.serialization.json.JsonObject
@@ -47,7 +48,8 @@ private suspend fun verifyKey(
     val response = forwarder.route(
         path = policy.verifyEndpoint,
         methodType = "GET",
-        heads = Headers.build { append(policy.keyHeader, key) }
+        heads = Headers.build { append(policy.keyHeader, key) },
+        origin = call.request.origin.remoteAddress
     )
     if (!response.status.isSuccess()){
         call.respond(HttpStatusCode.Forbidden)

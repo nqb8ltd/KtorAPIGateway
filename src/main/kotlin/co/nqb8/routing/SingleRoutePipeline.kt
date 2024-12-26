@@ -4,6 +4,7 @@ import co.nqb8.config.Route
 import co.nqb8.pipeline.Forwarder
 import co.nqb8.pipeline.Pipeline
 import io.ktor.client.call.*
+import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -20,7 +21,8 @@ class SingleRoutePipeline(
             path = "$baseUrl${call.request.uri}",
             methodType = method,
             heads = call.request.headers,
-            body = body
+            body = body,
+            origin = call.request.origin.remoteAddress
         )
         call.response.headers.apply {
             response.headers.forEach { key, value ->

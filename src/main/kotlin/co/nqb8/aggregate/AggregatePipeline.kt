@@ -9,6 +9,7 @@ import co.nqb8.utils.buildChildRoute
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -55,7 +56,7 @@ class AggregatePipeline(
                 callUrl = Url(request.uri),
             )
             val childBaseUrl = route.baseUrl ?: service.baseUrl
-            coroutineScope.route(url = "$childBaseUrl/$fullPath", headers = heads)
+            coroutineScope.route(url = "$childBaseUrl/$fullPath", headers = heads, origin = request.origin.remoteAddress)
         }
         return requests
     }
@@ -81,12 +82,13 @@ class AggregatePipeline(
 
 
 
-    private fun CoroutineScope.route(url: String, headers: Headers): Deferred<HttpResponse>{
+    private fun CoroutineScope.route(url: String, headers: Headers, origin: String): Deferred<HttpResponse>{
         return async {
             forwarder.route(
                 path = url,
                 methodType = "GET",
                 heads = headers,
+                origin = origin
             )
         }
     }

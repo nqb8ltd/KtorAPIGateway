@@ -13,6 +13,7 @@ class Forwarder (private val client: HttpClient) {
         path: String,
         methodType: String,
         heads: Headers,
+        origin:  String,
         body: JsonElement? = null
     ): HttpResponse {
         val request = client.request(path){
@@ -21,6 +22,7 @@ class Forwarder (private val client: HttpClient) {
                 setBody(body)
             }
             headers {
+                append("X-Forwarded-For", origin)
                 heads.forEach { key, value ->
                     if (key != HttpHeaders.ContentLength) {
                         appendIfNameAbsent(key, value.joinToString(" "))

@@ -3,42 +3,43 @@ package co.nqb8.config
 import co.nqb8.auth.GatewayAuthApiKeyRegistryKey
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlin.io.path.Path
 
 
 fun Application.gatewayApis(
-    getRegisteredRoutes: () -> Map<String, MutableList<String>>,
     registerEndpoints: Routing.(Service) -> Unit,
 ) {
+
     routing {
-        get("/_services") {
-            call.respond(HttpStatusCode.OK, getRegisteredRoutes())
-        }
-        put("/_services") {
-            if (servicesRouting == null) return@put call.respond(HttpStatusCode.BadRequest, "No services registered")
-            val updatedServices = call.receive<List<Service>>()
-            updatedServices.forEach { service ->
-                registerEndpoints(service)
-            }
-            call.respond(HttpStatusCode.Created, "Services updated")
-
-        }
-        post("/_services") {
-            if (servicesRouting != null) return@post call.respond(
-                HttpStatusCode.BadRequest,
-                mapOf("warning" to "Service already exists. Kindly update")
-            )
-            val newServices = call.receive<List<Service>>()
-
-            servicesRouting = routing {
-                newServices.forEach { service ->
-                    registerEndpoints(service)
+        authenticate("gateway-auth") {
+            get("/_services") {
+                val services = Path("../data/services.json").toFile().readText().let {
+                    Json.decodeFromString<List<Service>>(it)
                 }
+                call.respond(HttpStatusCode.OK, services)
             }
-            call.respond(HttpStatusCode.Created)
+            post("/_services") {
+                val newServices = call.receive<List<Service>>()
+                val services = Path("../data/services.json").toFile().readText().let {
+                    Json.decodeFromString<List<Service>>(it)
+                }
+                updateServices(services, newServices)
+
+                servicesRouting = routing {
+                    newServices.forEach { service ->
+                        registerEndpoints(service)
+                    }
+                }
+                call.respond(HttpStatusCode.Created)
+            }
         }
+
 
         post("/_invalidate/{key}"){
             val key = call.parameters["key"]
@@ -47,4 +48,29 @@ fun Application.gatewayApis(
             call.respond(HttpStatusCode.OK)
         }
     }
+}
+
+internal fun updateServices(old: List<Service>, new: List<Service>) {
+    val updatedServices = mutableSetOf<Service>()
+    new.forEach { service ->
+        val oldService = old.find { it.name == service.name }
+        if (oldService != null) {
+            val routes = oldService.routes.toMutableList().apply { addAll(service.routes) }.toSet().toList()
+            val aggregates = oldService.aggregates.toMutableList().apply { addAll(service.aggregates) }.toSet().toList()
+            val updated = oldService.copy(
+                routes = routes,
+                aggregates = aggregates,
+                messageQueue = if (service.messageQueue != oldService.messageQueue) service.messageQueue else oldService.messageQueue,
+                baseUrl = if (service.baseUrl != oldService.baseUrl) service.baseUrl else oldService.baseUrl
+            )
+            updatedServices.add(updated)
+        }else{
+            updatedServices.add(service)
+        }
+    }
+    if (updatedServices.isEmpty()){
+        updatedServices.addAll(new)
+    }
+    val path = Path("../data/services.json").toFile()
+    path.writeText(Json.encodeToString(updatedServices))
 }

@@ -39,7 +39,6 @@ fun Application.configureGateway(services: List<Service>?, forwarder: Forwarder)
     val getRegisteredRoutes = { (servicesRouting as RoutingRoot?)?.getRoutesRegistered().orEmpty() }
 
     gatewayApis(
-        getRegisteredRoutes = getRegisteredRoutes,
         registerEndpoints = { service -> registerEndpoints(service, forwarder, getRegisteredRoutes()) }
     )
 }
