@@ -27,4 +27,6 @@ fun Application.module() {
     }
     val json = Json
     registerServices(client, json)
+    println("Count")
+    println(Runtime.getRuntime().availableProcessors())
 }
