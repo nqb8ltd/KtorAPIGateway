@@ -100,6 +100,16 @@ data class MessageQueue(
     val port: Int,
     val username: String? = null,
     val password: String? = null,
+    val transFormation: TransFormation? = null,
 ){
+    @Serializable
+    data class TransFormation(
+        val fromKey: String,
+        val toKey: String,
+        val transformSource: TransformSource = TransformSource.KEY
+    )
+    enum class TransformSource{
+        PATH, HEADER, KEY
+    }
     fun getAddress() = "$host:$port"
 }

@@ -155,14 +155,17 @@ private fun Routing.createAmpqConnection(service: Service): MessageQueuePipeline
         ConnectionFactory().apply {
             host = service.messageQueue.host
             port = service.messageQueue.port
+            username = service.messageQueue.username ?: "guest"
+            password = service.messageQueue.password ?: "guest"
         }.newConnection()
     }.getOrNull()
+
     if (factoryConnection == null) return null
 
     val connection = application.attributes.computeIfAbsent(AttributeKey(service.messageQueue.getAddress())){ factoryConnection }
     return application.attributes.computeIfAbsent(AttributeKey(service.name)){
         println("Calculating message queue for ${service.name}")
-        MessageQueuePipeline(connection)
+        MessageQueuePipeline(connection, service.messageQueue)
     }
 }
 

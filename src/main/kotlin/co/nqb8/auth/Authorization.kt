@@ -44,17 +44,7 @@ suspend fun authorize(call: ApplicationCall, policy: AuthenticationPolicy, uri: 
                 call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid token"))
                 return
             }
-            val toVerify = policy.check.split(".")
-            var check = data
-            var toCheck = ""
-            toVerify.forEach {
-                when(val result = check[it]){
-                    is Map<*, *> -> { check = result as Map<String, Any> }
-                    else -> {
-                        toCheck = result.toString()
-                    }
-                }
-            }
+            val toCheck = getDataFromJwt(policy.check, data)
 
             val checkIndex = Url(uri).pickIdIndex(policy.checkPath)
             if (checkIndex != -1){
@@ -110,6 +100,21 @@ suspend fun authorize(call: ApplicationCall, policy: AuthenticationPolicy, uri: 
         }
     }
 
+}
+
+fun getDataFromJwt(fromKey: String, data: Map<String, Any>): String{
+    val toVerify = fromKey.split(".")
+    var check = data
+    var toCheck = ""
+    toVerify.forEach {
+        when(val result = check[it]){
+            is Map<*, *> -> { check = result as Map<String, Any> }
+            else -> {
+                toCheck = result.toString()
+            }
+        }
+    }
+    return toCheck
 }
 
 private suspend fun checkUser(
