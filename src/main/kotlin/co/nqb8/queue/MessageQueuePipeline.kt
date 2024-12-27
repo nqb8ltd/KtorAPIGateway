@@ -13,7 +13,9 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 
@@ -27,7 +29,6 @@ class MessageQueuePipeline(
 
 
     override suspend fun pipe(call: RoutingCall, route: Route, body: JsonElement?) {
-        println("Piping the line: $route")
         if (route.queue == null) return
         if (body == null){
             call.respond(HttpStatusCode.BadRequest, mapOf("message" to "missing body"))
@@ -35,13 +36,18 @@ class MessageQueuePipeline(
         }
         call.respond(HttpStatusCode.Created)
         if (messageQueue.transFormation == null){
-            retry { sendMessage(route.queue, body) }
+            withContext(Dispatchers.IO) {
+                retry { sendMessage(route.queue, body) }
+            }
             return
         }
 
+        transformAndSendMessage(call, route, body)
+    }
 
-
-
+    private suspend fun transformAndSendMessage(call: RoutingCall, route: Route, body: JsonElement) = withContext(Dispatchers.IO) {
+        if (messageQueue.transFormation == null) return@withContext
+        if (route.queue == null) return@withContext
         val sourceTransform: String = when(messageQueue.transFormation.transformSource){
             MessageQueue.TransformSource.PATH -> {
                 val callUrl = Url(call.request.uri).segments
