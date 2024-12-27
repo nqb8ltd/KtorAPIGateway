@@ -27,6 +27,7 @@ class MessageQueuePipeline(
 
 
     override suspend fun pipe(call: RoutingCall, route: Route, body: JsonElement?) {
+        println("Piping the line: $route")
         if (route.queue == null) return
         if (body == null){
             call.respond(HttpStatusCode.BadRequest, mapOf("message" to "missing body"))
@@ -38,7 +39,7 @@ class MessageQueuePipeline(
             return
         }
 
-        println("Piping the line")
+
 
 
         val sourceTransform: String = when(messageQueue.transFormation.transformSource){
