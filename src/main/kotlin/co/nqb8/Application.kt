@@ -24,6 +24,17 @@ fun Application.module() {
             json()
         }
         expectSuccess = false
+        engine{
+            requestTimeout = 300000
+            maxConnectionsCount = 2000
+            endpoint {
+                maxConnectionsPerRoute = 1000
+                pipelineMaxSize = 1000
+                keepAliveTime = 5000
+                connectTimeout = 5000
+                connectAttempts = 2
+            }
+        }
     }
     val json = Json
     registerServices(client, json)
