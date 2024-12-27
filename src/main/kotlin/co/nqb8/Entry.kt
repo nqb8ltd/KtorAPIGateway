@@ -22,7 +22,7 @@ fun Application.registerServices(client: HttpClient, json: Json) {
         servicesFile.writeText("[]")
     }
    val services = runCatching {
-        val config = Path("services.json").toFile().readText()
+        val config = servicesFile.toFile().readText()
         json.decodeFromString<List<Service>>(config)
     }.getOrNull()
 
