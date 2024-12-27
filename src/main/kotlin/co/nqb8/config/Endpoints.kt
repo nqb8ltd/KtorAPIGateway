@@ -38,6 +38,11 @@ fun Application.gatewayApis(
                 }
                 call.respond(HttpStatusCode.Created)
             }
+            delete("/_services") {
+                val services = Path("../data/services.json").toFile()
+                services.delete()
+                call.respond(HttpStatusCode.Created)
+            }
         }
 
 
