@@ -89,7 +89,10 @@ private fun Routing.registerRoutes(
     route.methods?.forEach { method ->
         val pipelines = buildList {
             setUpAuthentication(route.authenticationPolicy, route.uri)
-            if (messageQueuePipeline != null) add(messageQueuePipeline)
+            if (messageQueuePipeline != null) {
+                println("Adding queues")
+                add(messageQueuePipeline)
+            }
             add(SingleRoutePipeline(forwarder = forwarder, baseUrl = service.baseUrl, method = method))
         }
         registerRouteByMethods(

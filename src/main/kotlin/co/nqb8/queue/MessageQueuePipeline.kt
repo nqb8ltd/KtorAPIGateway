@@ -38,6 +38,8 @@ class MessageQueuePipeline(
             return
         }
 
+        println("Piping the line")
+
 
         val sourceTransform: String = when(messageQueue.transFormation.transformSource){
             MessageQueue.TransformSource.PATH -> {
