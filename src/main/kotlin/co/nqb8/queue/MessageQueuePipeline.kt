@@ -20,12 +20,17 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 
 class MessageQueuePipeline(
-    private val connection: Connection,
+    connection: Connection,
     private val messageQueue: MessageQueue
 ): Pipeline {
-
-
     private val properties = AMQP.BasicProperties.Builder().apply { deliveryMode(2) }.build()
+    private val channel = connection.createChannel().apply {
+        confirmSelect()
+        addConfirmListener(
+            { l, b -> println("Ack Tag: $l, multiple: $b")  },
+            { l, b -> println("Nack Tag: $l, multiple: $b")  }
+        )
+    }
 
 
     override suspend fun pipe(call: RoutingCall, route: Route, body: JsonElement?) {
@@ -81,14 +86,6 @@ class MessageQueuePipeline(
 
     private fun sendMessage(queue: String, body: JsonElement): Result<Unit> {
         return runCatching {
-            val channel = connection.createChannel().apply {
-                confirmSelect()
-                addConfirmListener(
-                    { l, b -> println("Ack Tag: $l, multiple: $b")  },
-                    { l, b -> println("Nack Tag: $l, multiple: $b")  }
-                )
-            }
-
             channel.queueDeclare(queue, true, false, false, null)
             val data = Json.encodeToString(body)
             channel.basicPublish("", queue, properties, data.encodeToByteArray())

@@ -15,7 +15,6 @@ import kotlin.io.path.Path
 fun Application.gatewayApis(
     registerEndpoints: Routing.(Service) -> Unit,
 ) {
-
     routing {
         authenticate("gateway-auth") {
             get("/_services") {

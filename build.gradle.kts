@@ -67,11 +67,10 @@ dependencies {
 
 
     implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.apache)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.json)
     implementation(libs.ktor.client.neg)
-
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
