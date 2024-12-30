@@ -106,6 +106,7 @@ data class MessageQueue(
     data class TransFormation(
         val fromKey: String,
         val toKey: String,
+        val dataBody: String?, //meta=,event=,data=body //body
         val transformSource: TransformSource = TransformSource.KEY
     )
     enum class TransformSource{

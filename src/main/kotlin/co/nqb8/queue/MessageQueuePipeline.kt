@@ -77,9 +77,23 @@ class MessageQueuePipeline(
             }
         }
 
-        val mapBody = body.jsonObject.toMutableMap().apply {
+        var mapBody: Map<String, JsonElement> = body.jsonObject.toMutableMap().apply {
             putIfAbsent(messageQueue.transFormation.toKey, JsonPrimitive(sourceTransform))
         }
+        if (messageQueue.transFormation.dataBody != null){
+            val bodyValues = messageQueue.transFormation.dataBody.split(",")
+            mapBody = buildMap{
+                bodyValues.forEach { dataBody ->
+                    val (key, value) = dataBody.split("=")
+                    if (value != "body"){
+                        put(key, JsonPrimitive(value))
+                    }else{
+                        put(key, JsonObject(mapBody))
+                    }
+                }
+            }
+        }
+
         println("Map: $mapBody")
         retry { sendMessage(route.queue, JsonObject(mapBody)) }
     }
