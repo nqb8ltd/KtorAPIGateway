@@ -40,7 +40,13 @@ private fun Application.auth(){
     }
 }
 private fun Application.cors() {
-    install(CORS)
+    install(CORS){
+        anyHost()
+        anyMethod()
+        allowCredentials = true
+        allowNonSimpleContentTypes = true
+        allowSameOrigin = true
+    }
 }
 private fun Application.rateLimit() {
     install(GatewayRateLimit)
