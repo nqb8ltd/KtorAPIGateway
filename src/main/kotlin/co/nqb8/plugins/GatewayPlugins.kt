@@ -46,6 +46,7 @@ private fun Application.cors() {
         allowCredentials = true
         allowNonSimpleContentTypes = true
         allowSameOrigin = true
+        allowHeaders { true }
     }
 }
 private fun Application.rateLimit() {
