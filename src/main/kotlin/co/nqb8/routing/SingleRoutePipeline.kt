@@ -49,9 +49,15 @@ class SingleRoutePipeline(
         }
         call.response.headers.apply {
             response.headers.forEach { key, value ->
-                append(key, value.firstOrNull().orEmpty())
+                if (key.startsWith('X')) {
+                    append(key, value.joinToString(" "))
+                }
+                if (key.startsWith("Content")){
+                    append(key, value.joinToString(" "))
+                }
             }
         }
+
         call.response.status(response.status)
         call.respond(response.bodyAsChannel())
     }
