@@ -46,7 +46,13 @@ data class Route(
     val rateLimitPolicy: RateLimitPolicy? = null,
     @SerialName("queue")
     val queue: String? = null,
-)
+    @SerialName("body_type")
+    val bodyType: BodyType = BodyType.JSON,
+){
+    enum class BodyType{
+        JSON, FORM, MULTIPART
+    }
+}
 
 @Serializable
 sealed class AuthenticationPolicy {

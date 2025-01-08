@@ -124,7 +124,6 @@ private suspend fun checkUser(
     toCompare: () -> String?
 ) {
     val registeredUriIndex = Url(uri).segments.indexOf("{${policy.check}}")
-    println("Index: $registeredUriIndex")
     if (registeredUriIndex != -1) {
         val callData = Url(call.request.uri).segments[registeredUriIndex]
         println("To compare: ${toCompare()}, call: $callData")

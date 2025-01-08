@@ -33,13 +33,14 @@ class MessageQueuePipeline(
     }
 
 
-    override suspend fun pipe(call: RoutingCall, route: Route, body: JsonElement?) {
+    override suspend fun pipe(call: RoutingCall, route: Route) {
         if (route.queue == null) return
+        val body = runCatching { call.receive<JsonElement>() }.getOrNull()
         if (body == null){
             call.respond(HttpStatusCode.BadRequest, mapOf("message" to "missing body"))
             return
         }
-        call.respond(HttpStatusCode.Created)
+        call.respond(HttpStatusCode.Created, mapOf("status" to "success", "message" to "Package registered successfully"))
         if (messageQueue.transFormation == null){
             withContext(Dispatchers.IO) {
                 retry { sendMessage(route.queue, body) }

@@ -2,20 +2,64 @@
   {
     "name": "parcel",
     "baseUrl": "http://localhost:8081",
+    "message_queue": {
+      "host": "localhost",
+      "port": 5672,
+      "transFormation": {
+        "fromKey": "{courier_id}",
+        "toKey": "courier_id",
+        "dataBody": "meta=,event=package-registration,data=body",
+        "transformSource": "PATH"
+      }
+    },
     "routes": [
       {
-        "uri": "/parcel",
-        "methods": ["POST"]
+        "uri": "/parcel/{courier_id}",
+        "methods": ["POST"],
+        "queue": "package-service",
+        "authentication_policy": {
+          "type": "JwtPolicy",
+          "policy": "VERIFY",
+          "check": "uuid",
+          "data": "user",
+          "permissionsKey": "roles",
+          "permissions": ["courier-admin"],
+          "jwtSecret": "CymZstRCOoRyNxGRdcQkRLp1sj1mbnsuEbQSrM916I82KBkwDDTezg8HcCPwbOuH"
+        }
+      },
+      {
+        "uri": "/parcel/add",
+        "methods": ["POST"],
+        "body_type": "FORM",
+        "authentication_policy": {
+          "type": "JwtPolicy",
+          "policy": "VERIFY",
+          "check": "uuid",
+          "data": "user",
+          "permissionsKey": "roles",
+          "permissions": ["courier-admin"],
+          "jwtSecret": "CymZstRCOoRyNxGRdcQkRLp1sj1mbnsuEbQSrM916I82KBkwDDTezg8HcCPwbOuH"
+        }
+      },
+      {
+        "uri": "/parcel/test",
+        "methods": ["POST"],
+        "body_type": "MULTIPART",
+        "authentication_policy": {
+          "type": "JwtPolicy",
+          "policy": "VERIFY",
+          "check": "uuid",
+          "data": "user",
+          "permissionsKey": "roles",
+          "permissions": ["courier-admin"],
+          "jwtSecret": "CymZstRCOoRyNxGRdcQkRLp1sj1mbnsuEbQSrM916I82KBkwDDTezg8HcCPwbOuH"
+        }
       }
     ]
   },
   {
     "name": "payment",
     "baseUrl": "http://127.0.0.1:8082",
-    "message_queue": {
-      "host": "localhost",
-      "port": 5672
-    },
     "routes": [
       {
         "uri": "/user/{userId}",

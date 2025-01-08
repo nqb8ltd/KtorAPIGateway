@@ -16,7 +16,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
-import kotlinx.serialization.json.JsonElement
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -138,10 +137,9 @@ private fun Routing.registerRouteByMethods(
 ) {
     route(uri, method = HttpMethod(method)){
         handle {
-            val body = runCatching { call.receive<JsonElement>() }.getOrNull()
             pipelines.forEach { pipeline ->
                 if (!call.isHandled) {
-                    pipeline.pipe(call, route, body)
+                    pipeline.pipe(call, route)
                 }
             }
             if (!call.isHandled) {

@@ -16,14 +16,37 @@ class SingleRoutePipeline(
     private val method: String,
 ): Pipeline {
 
-    override suspend fun pipe(call: RoutingCall,  route: Route, body: JsonElement?) {
-        val response = forwarder.route(
-            path = "$baseUrl${call.request.uri}",
-            methodType = method,
-            heads = call.request.headers,
-            body = body,
-            origin = call.request.origin.remoteAddress
-        )
+    override suspend fun pipe(call: RoutingCall,  route: Route) {
+        val response = when(route.bodyType){
+            Route.BodyType.JSON -> {
+                val json = runCatching { call.receive<JsonElement>() }.getOrNull()
+                forwarder.route(
+                    path = "$baseUrl${call.request.uri}",
+                    methodType = method,
+                    heads = call.request.headers,
+                    body = json,
+                    origin = call.request.origin.remoteAddress
+                )
+            }
+            Route.BodyType.FORM -> {
+                val form = runCatching { call.receiveParameters() }.getOrNull()
+                forwarder.routePart(
+                    path = "$baseUrl${call.request.uri}",
+                    heads = call.request.headers,
+                    form = form,
+                    origin = call.request.origin.remoteAddress
+                )
+            }
+            Route.BodyType.MULTIPART -> {
+                val multipart = runCatching { call.receiveMultipart() }.getOrNull()
+                forwarder.routePart(
+                    path = "$baseUrl${call.request.uri}",
+                    heads = call.request.headers,
+                    multipart = multipart,
+                    origin = call.request.origin.remoteAddress
+                )
+            }
+        }
         call.response.headers.apply {
             response.headers.forEach { key, value ->
                 if (key.startsWith('X')) {

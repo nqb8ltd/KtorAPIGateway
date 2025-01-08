@@ -22,7 +22,7 @@ class AggregatePipeline(
     private val aggregate: Aggregate
 ): Pipeline {
 
-    override suspend fun pipe(call: RoutingCall,  route: Route, body: JsonElement?) {
+    override suspend fun pipe(call: RoutingCall,  route: Route) {
         coroutineScope {
             val routes = call.aggregateRequests(aggregate.routes, this, call.request.headers)
             val results = routes.awaitAll()
