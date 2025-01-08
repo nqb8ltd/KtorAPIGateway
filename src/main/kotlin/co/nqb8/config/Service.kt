@@ -37,7 +37,7 @@ data class Route(
     @SerialName("tag")
     val tag: String? = null,
     @SerialName("methods")
-    val methods: List<String>? = null,
+    val methods: List<Method>? = null,
     @SerialName("baseUrl")
     val baseUrl: String? = null,
     @SerialName("authentication_policy")
@@ -45,13 +45,21 @@ data class Route(
     @SerialName("rate_limit_policy")
     val rateLimitPolicy: RateLimitPolicy? = null,
     @SerialName("queue")
-    val queue: String? = null,
-    @SerialName("body_type")
-    val bodyType: BodyType = BodyType.JSON,
+    val queue: String? = null
 ){
-    enum class BodyType{
+    @Serializable
+    data class Method(
+        val method: String,
+        val requestBodyType: RequestBodyType = RequestBodyType.JSON
+    )
+
+    enum class RequestBodyType{
         JSON, FORM, MULTIPART
     }
+    enum class ResponseBodyType{
+        JSON, BINARY, TEXT
+    }
+
 }
 
 @Serializable

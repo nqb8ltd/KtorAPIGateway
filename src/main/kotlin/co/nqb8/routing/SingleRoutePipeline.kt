@@ -3,7 +3,7 @@ package co.nqb8.routing
 import co.nqb8.config.Route
 import co.nqb8.pipeline.Forwarder
 import co.nqb8.pipeline.Pipeline
-import io.ktor.client.call.*
+import io.ktor.client.statement.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -13,22 +13,22 @@ import kotlinx.serialization.json.JsonElement
 class SingleRoutePipeline(
     private val forwarder: Forwarder,
     private val baseUrl: String,
-    private val method: String,
+    private val method: Route.Method,
 ): Pipeline {
 
     override suspend fun pipe(call: RoutingCall,  route: Route) {
-        val response = when(route.bodyType){
-            Route.BodyType.JSON -> {
+        val response = when(method.requestBodyType){
+            Route.RequestBodyType.JSON -> {
                 val json = runCatching { call.receive<JsonElement>() }.getOrNull()
                 forwarder.route(
                     path = "$baseUrl${call.request.uri}",
-                    methodType = method,
+                    methodType = method.method,
                     heads = call.request.headers,
                     body = json,
                     origin = call.request.origin.remoteAddress
                 )
             }
-            Route.BodyType.FORM -> {
+            Route.RequestBodyType.FORM -> {
                 val form = runCatching { call.receiveParameters() }.getOrNull()
                 forwarder.routePart(
                     path = "$baseUrl${call.request.uri}",
@@ -37,7 +37,7 @@ class SingleRoutePipeline(
                     origin = call.request.origin.remoteAddress
                 )
             }
-            Route.BodyType.MULTIPART -> {
+            Route.RequestBodyType.MULTIPART -> {
                 val multipart = runCatching { call.receiveMultipart() }.getOrNull()
                 forwarder.routePart(
                     path = "$baseUrl${call.request.uri}",
@@ -49,12 +49,12 @@ class SingleRoutePipeline(
         }
         call.response.headers.apply {
             response.headers.forEach { key, value ->
-                if (key.startsWith('X')) {
-                    append(key, value.joinToString(" "))
-                }
+                append(key, value.firstOrNull().orEmpty())
             }
         }
-        val responseBody = response.body<JsonElement>()
-        call.respond(response.status, responseBody)
+        call.response.status(response.status)
+        call.respond(response.bodyAsChannel())
     }
+
+
 }

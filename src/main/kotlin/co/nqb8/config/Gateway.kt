@@ -96,7 +96,7 @@ private fun Routing.registerRoutes(
         }
         registerRouteByMethods(
             uri = route.uri,
-            method = method,
+            method = method.method,
             pipelines = pipelines,
             route = route
         )
@@ -176,7 +176,8 @@ private fun hasRegisteredRoute(route: Route, registeredRoutes: Map<String, Mutab
     val routeRegistered = registeredRoutes[route.uri]
     if (route.methods != null && routeRegistered != null){
         routeRegistered.forEach {
-            if (route.methods.contains(it)) return true
+            val routes = route.methods.map { route -> route.method }
+            if (routes.contains(it)) return true
         }
     }
     return false
