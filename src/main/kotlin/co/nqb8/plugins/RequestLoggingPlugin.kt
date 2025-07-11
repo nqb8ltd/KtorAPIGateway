@@ -20,7 +20,7 @@ val RequestLogging = createApplicationPlugin(name = "RequestLoggingPlugin") {
         call.attributes.put(AttributeKey("start-time"), Clock.System.now())
         //save the request
         val requestId = call.callId ?: return@onCall
-        val clientIp = call.request.headers["X-Forwarded-For"] ?: call.request.headers["X-Real-IP"] ?: call.request.origin.remoteHost
+        val clientIp = call.request.headers["X-Forwarded-For"] ?: call.request.origin.remoteHost
         val httpMethod = call.request.httpMethod.value
         val path = call.request.uri
         val requestHeaders = Json.encodeToString(call.request.headers.toMap())
