@@ -1,4 +1,4 @@
-package co.nqb8.queue
+package co.nqb8.pipeline
 
 import co.nqb8.auth.GatewayJWTAuthForCallKey
 import co.nqb8.auth.GatewayKeyAuthForCallKey
@@ -6,17 +6,17 @@ import co.nqb8.auth.getDataFromJwt
 import co.nqb8.config.JwtPolicy
 import co.nqb8.config.MessageQueue
 import co.nqb8.config.Route
-import co.nqb8.pipeline.Pipeline
+import co.nqb8.data.requestRepository
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Connection
 import io.ktor.http.*
+import io.ktor.server.plugins.callid.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 
 class MessageQueuePipeline(
@@ -36,11 +36,19 @@ class MessageQueuePipeline(
     override suspend fun pipe(call: RoutingCall, route: Route) {
         if (route.queue == null) return
         val body = runCatching { call.receive<JsonElement>() }.getOrNull()
+        call.application.requestRepository.update(call.callId){
+            it.requestBody = body.toString()
+            it.upstreamUrl = "queue://${route.queue}"
+        }
         if (body == null){
             call.respond(HttpStatusCode.BadRequest, mapOf("message" to "missing body"))
             return
         }
-        call.respond(HttpStatusCode.Created, mapOf("status" to "success", "message" to "Package registered successfully"))
+        val response = mapOf("status" to "success", "message" to "Package registered successfully")
+        call.application.requestRepository.update(call.callId){
+            it.responseBody = Json.encodeToString(response)
+        }
+        call.respond(HttpStatusCode.Created, response)
         if (messageQueue.transFormation == null){
             withContext(Dispatchers.IO) {
                 retry { sendMessage(route.queue, body) }

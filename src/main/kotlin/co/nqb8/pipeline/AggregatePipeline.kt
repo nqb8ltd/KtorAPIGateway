@@ -1,10 +1,9 @@
-package co.nqb8.aggregate
+package co.nqb8.pipeline
 
 import co.nqb8.config.Aggregate
 import co.nqb8.config.Route
 import co.nqb8.config.Service
-import co.nqb8.pipeline.Forwarder
-import co.nqb8.pipeline.Pipeline
+import co.nqb8.forwarder.Forwarder
 import co.nqb8.utils.buildChildRoute
 import io.ktor.client.call.*
 import io.ktor.client.statement.*

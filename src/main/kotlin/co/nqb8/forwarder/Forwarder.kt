@@ -1,4 +1,4 @@
-package co.nqb8.pipeline
+package co.nqb8.forwarder
 
 import io.ktor.client.*
 import io.ktor.client.engine.apache5.*
@@ -28,7 +28,7 @@ class Forwarder {
             this.logger = object : Logger {
                 override fun log(message: String) {
                     println("Request messages")
-                    println(message)
+                    //println(message)
                 }
             }
         }

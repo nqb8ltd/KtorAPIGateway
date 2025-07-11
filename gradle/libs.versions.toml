@@ -1,8 +1,10 @@
 
 [versions]
 kotlin-version = "2.1.0"
-ktor-version = "3.0.2"
+ktor-version = "3.2.1"
 logback-version = "1.4.14"
+compose = "1.8.2"
+exposed-version = "0.61.0"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -16,6 +18,7 @@ ktor-server-neg = { module = "io.ktor:ktor-server-content-negotiation", version.
 ktor-server-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-version" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor-version" }
 ktor-server-rate-limit = { module = "io.ktor:ktor-server-rate-limit", version.ref = "ktor-version" }
+ktor-server-call-id = { module = "io.ktor:ktor-server-call-id", version.ref = "ktor-version" }
 
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-version" }
@@ -26,6 +29,15 @@ ktor-client-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version
 
 rabbitmq = "com.rabbitmq:amqp-client:5.23.0"
 
+postgres = "org.postgresql:postgresql:42.7.2"
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed-version" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed-version" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed-version" }
+exposed-migration = { module = "org.jetbrains.exposed:exposed-migration", version.ref = "exposed-version" }
+exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed-version" }
+date = "org.jetbrains.kotlinx:kotlinx-datetime:0.6.2"
+
+
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor-version" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-version" }
@@ -34,3 +46,5 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin-version" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }

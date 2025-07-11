@@ -17,6 +17,10 @@ application {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://packages.confluent.io/maven")
+        name = "confluence"
+    }
 }
 jib{
     from {
@@ -29,9 +33,21 @@ jib{
     }
     container{
         ports = listOf("8080")
-        val API_KEY: String? = project.properties.get("API_KEY") as String?
+        val API_KEY: String? = project.properties["API_KEY"] as String?
         println("Key: $API_KEY")
-        environment = mapOf("API_KEY" to API_KEY)
+        val DB_URL = project.properties["DB_URL"] as String?
+        val DB_USER = project.properties["DB_USER"] as String?
+        val DB_PASSWORD = project.properties["DB_PASSWORD"] as String?
+        val ADMIN_EMAIL = project.properties["ADMIN_EMAIL"] as String?
+        val ADMIN_PASSWORD = project.properties["ADMIN_PASSWORD"] as String?
+        environment = mapOf(
+            "API_KEY" to API_KEY,
+            "DB_URL" to DB_URL,
+            "DB_USER" to DB_USER,
+            "DB_PASSWORD" to DB_PASSWORD,
+            "ADMIN_EMAIL" to ADMIN_EMAIL,
+            "ADMIN_PASSWORD" to ADMIN_PASSWORD
+        )
     }
 }
 ktor{
@@ -62,15 +78,24 @@ dependencies {
     implementation(libs.ktor.server.json)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.rate.limit)
+    implementation(libs.ktor.server.call.id)
 
     implementation(libs.rabbitmq)
-
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.apache)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.json)
     implementation(libs.ktor.client.neg)
+
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.migration)
+    implementation(libs.exposed.kotlin.datetime)
+    implementation(libs.postgres)
+
+    implementation(libs.date)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)

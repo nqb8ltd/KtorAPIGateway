@@ -1,6 +1,6 @@
 package co.nqb8.auth
 
-import co.nqb8.pipeline.Forwarder
+import co.nqb8.forwarder.Forwarder
 import co.nqb8.ratelimiter.GatewayCallPhase
 import co.nqb8.utils.uriMatches
 import io.ktor.server.application.*

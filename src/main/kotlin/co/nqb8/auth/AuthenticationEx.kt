@@ -3,7 +3,9 @@ package co.nqb8.auth
 import co.nqb8.config.AuthenticationPolicy
 import co.nqb8.config.JwtPolicy
 import co.nqb8.config.KeyPolicy
-import co.nqb8.pipeline.Forwarder
+import co.nqb8.data.dto.AuthType
+import co.nqb8.data.requestRepository
+import co.nqb8.forwarder.Forwarder
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
@@ -11,6 +13,7 @@ import io.ktor.client.call.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
+import io.ktor.server.plugins.callid.*
 import io.ktor.server.response.*
 import io.ktor.util.collections.*
 import kotlinx.serialization.json.JsonObject
@@ -52,6 +55,10 @@ private suspend fun verifyKey(
         origin = call.request.origin.remoteAddress
     )
     if (!response.status.isSuccess()){
+        call.application.requestRepository.update(call.callId) {
+            it.authType = AuthType.KEY
+            it.authenticationSuccess = false
+        }
         call.respond(HttpStatusCode.Forbidden)
         return
     }
@@ -60,6 +67,10 @@ private suspend fun verifyKey(
     registry[key] = result
     call.attributes.put(GatewayKeyAuthForCallKey, result)
 
+    call.application.requestRepository.update(call.callId) {
+        it.authType = AuthType.KEY
+        it.authenticationSuccess = true
+    }
 
 }
 private suspend fun verifyJwt(call: ApplicationCall, policy: JwtPolicy) {
@@ -80,10 +91,19 @@ private suspend fun verifyJwt(call: ApplicationCall, policy: JwtPolicy) {
 private suspend fun verifyJwt(call: ApplicationCall, jwt: String, policy: JwtPolicy) {
     val verifier = JWT.require(Algorithm.HMAC256(policy.jwtSecret))
         .build()
+    val requestRepository = call.application.requestRepository
     try {
         val verified = verifier.verify(jwt)
         call.attributes.put(GatewayJWTAuthForCallKey, verified)
+        requestRepository.update(call.callId) {
+            it.authType = AuthType.JWT
+            it.authenticationSuccess = true
+        }
     } catch (e: JWTVerificationException) {
+        requestRepository.update(call.callId){
+            it.authType = AuthType.JWT
+            it.authenticationSuccess = false
+        }
         val error = mapOf("error" to e.message)
         call.respond(HttpStatusCode.Unauthorized, error)
     }
