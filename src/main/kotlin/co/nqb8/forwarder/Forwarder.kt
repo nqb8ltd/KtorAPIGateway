@@ -26,10 +26,7 @@ class Forwarder {
         install(Logging) {
             this.level = LogLevel.ALL
             this.logger = object : Logger {
-                override fun log(message: String) {
-                    println("Request messages")
-                    //println(message)
-                }
+                override fun log(message: String) {}
             }
         }
         expectSuccess = false

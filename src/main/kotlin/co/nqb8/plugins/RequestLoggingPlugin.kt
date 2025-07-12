@@ -1,7 +1,9 @@
 package co.nqb8.plugins
 
+import co.nqb8.data.RequestRepository
 import co.nqb8.data.requestRepository
 import io.ktor.server.application.*
+import io.ktor.server.application.hooks.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.callid.*
 import io.ktor.server.request.*
@@ -13,7 +15,6 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 
 val RequestLogging = createApplicationPlugin(name = "RequestLoggingPlugin") {
-    println("RequestLoggingPlugin is installed!")
     val requestRepository = application.requestRepository
     onCall { call ->
         if (call.request.uri.startsWith("/_")) return@onCall
@@ -28,13 +29,26 @@ val RequestLogging = createApplicationPlugin(name = "RequestLoggingPlugin") {
         requestRepository.createRequestLog(requestId, clientIp, httpMethod, path, requestHeaders, queryParams)
 
     }
+    on(ResponseSent){ call ->
+        if (call.request.uri.startsWith("/_")) return@on
+        updateEnd(call, requestRepository)
+    }
+    on(CallFailed){ call, exception ->
+        if (call.request.uri.startsWith("/_")) return@on
+    }
     onCallRespond { call ->
         if (call.request.uri.startsWith("/_")) return@onCallRespond
-        val endTime = Clock.System.now().toEpochMilliseconds()
-        val startTime = call.attributes.get<Instant>(AttributeKey("start-time")).toEpochMilliseconds()
-        requestRepository.update(call.callId){
-            it.endTimestamp = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            it.latencyMs = endTime - startTime
-        }
+        updateEnd(call, requestRepository)
+    }
+}
+
+private fun updateEnd(call: ApplicationCall, requestRepository: RequestRepository, exception: Exception? = null) {
+    val endTime = Clock.System.now().toEpochMilliseconds()
+    val startTime = call.attributes.get<Instant>(AttributeKey("start-time")).toEpochMilliseconds()
+    requestRepository.update(call.callId){
+        it.endTimestamp = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        it.latencyMs = endTime - startTime
+        it.responseStatusCode = call.response.status()?.value
+        it.responseBody = exception?.message
     }
 }

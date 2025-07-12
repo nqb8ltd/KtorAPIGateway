@@ -99,7 +99,6 @@ class SingleRoutePipeline(
             call.response.status(response.status)
             call.respond(response.bodyAsChannel())
         }.onFailure { error ->
-            println("Error: $error")
             call.application.requestRepository.update(call.callId){
                 it.responseStatusCode = 500
                 it.responseBody = error.message
