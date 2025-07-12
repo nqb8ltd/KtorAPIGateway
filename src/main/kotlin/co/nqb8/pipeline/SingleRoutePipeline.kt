@@ -37,7 +37,7 @@ class SingleRoutePipeline(
                         methodType = method.method,
                         heads = call.request.headers,
                         body = json,
-                        origin = call.request.origin.remoteAddress
+                        origin = call.request.headers["X-Forwarded-For"] ?: call.request.origin.remoteAddress
                     )
                 }
             }
@@ -52,7 +52,7 @@ class SingleRoutePipeline(
                         path = "$baseUrl${call.request.uri}",
                         heads = call.request.headers,
                         form = form,
-                        origin = call.request.origin.remoteAddress
+                        origin = call.request.headers["X-Forwarded-For"] ?: call.request.origin.remoteAddress
                     )
                 }
             }
@@ -67,7 +67,7 @@ class SingleRoutePipeline(
                         path = "$baseUrl${call.request.uri}",
                         heads = call.request.headers,
                         multipart = multipart,
-                        origin = call.request.origin.remoteAddress
+                        origin = call.request.headers["X-Forwarded-For"] ?: call.request.origin.remoteAddress
                     )
                 }
 
