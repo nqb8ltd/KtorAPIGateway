@@ -26,7 +26,6 @@ class SingleRoutePipeline(
         val forwarded = when(method.requestBodyType){
             Route.RequestBodyType.JSON -> {
                 val json = runCatching { call.receive<JsonElement>() }.getOrNull()
-                println("Json: $json")
                 call.application.requestRepository.update(call.callId){
                     it.requestBody = Json.encodeToString(json)
                     it.upstreamUrl = "$baseUrl${call.request.uri}"

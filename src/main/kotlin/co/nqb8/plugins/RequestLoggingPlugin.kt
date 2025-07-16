@@ -35,6 +35,7 @@ val RequestLogging = createApplicationPlugin(name = "RequestLoggingPlugin") {
     }
     on(CallFailed){ call, exception ->
         if (call.request.uri.startsWith("/_")) return@on
+        updateEnd(call, requestRepository, exception)
     }
     onCallRespond { call ->
         if (call.request.uri.startsWith("/_")) return@onCallRespond
@@ -42,7 +43,7 @@ val RequestLogging = createApplicationPlugin(name = "RequestLoggingPlugin") {
     }
 }
 
-private fun updateEnd(call: ApplicationCall, requestRepository: RequestRepository, exception: Exception? = null) {
+private fun updateEnd(call: ApplicationCall, requestRepository: RequestRepository, exception: Throwable? = null) {
     val endTime = Clock.System.now().toEpochMilliseconds()
     val startTime = call.attributes.get<Instant>(AttributeKey("start-time")).toEpochMilliseconds()
     requestRepository.update(call.callId){

@@ -1,16 +1,12 @@
 package co.nqb8.dashboard
 
-import co.nqb8.dashboard.dto.DashboardHome
-import co.nqb8.dashboard.dto.FlowChart
-import co.nqb8.dashboard.dto.LastRequestIssue
+import co.nqb8.dashboard.dto.*
 import co.nqb8.data.RequestRepository
+import co.nqb8.data.dto.RequestLogEntity
 import co.nqb8.data.dto.RequestLogTable
 import co.nqb8.gateway.routes
 import io.ktor.http.*
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -42,7 +38,8 @@ class DashboardUseCase(
             val requestBy7hrs = requestRepository.find { RequestLogTable.createdAt greaterEq last7hrs }
                 .groupBy { it.updatedAt.hour }
                 .map {
-                    FlowChart(title = "${it.key}AM", value = it.value.size.toLong())
+                    val time = LocalTime(it.key, 0)
+                    FlowChart(title = time.toHourAmPm(), value = it.value.size.toLong())
                 }
             val recentRequestsWithIssue = requestRepository.find {
                 RequestLogTable.responseStatusCode notInList  (200 until 300)
@@ -66,5 +63,60 @@ class DashboardUseCase(
                 recentRequestsWithIssue = recentRequestsWithIssue
             )
         }
+    }
+
+    suspend fun getTracesByPage(page: Int, count: Int): List<Trace>{
+        return newSuspendedTransaction {
+            RequestLogEntity.all().offset(page.toLong()).limit(count).map {
+                Trace(
+                    id = it.uuid.toString(),
+                    route = it.path,
+                    status = HttpStatusCode.fromValue(it.responseStatusCode ?: 404).isSuccess(),
+                    duration = it.latencyMs ?: 0,
+                    timeStamp = it.createdAt,
+                    method = it.httpMethod,
+                    sourceIp = it.clientIp,
+                    headers = it.requestHeaders,
+                    upstreamDuration = it.responseTime ?: 0,
+                    requestBody = it.requestBody.orEmpty(),
+                    responseBody = it.responseBody.orEmpty(),
+                    authType = it.authType,
+                    authSuccess = it.authenticationSuccess
+                )
+            }
+        }
+    }
+
+    suspend fun getTopConsumersByHrs(hours: Int = 24): List<TopConsumers>{
+        val currentTime = Clock.System.now()
+        val last24hours = (currentTime - hours.hours).toLocalDateTime(TimeZone.currentSystemDefault())
+        return newSuspendedTransaction {
+            requestRepository.find { RequestLogTable.createdAt greaterEq last24hours }
+                .groupBy { it.path }
+                .map { (key, entity) ->
+                    val successes = entity.map { HttpStatusCode.fromValue(it.responseStatusCode ?: 404) }.filter { it.isSuccess() }
+                    val errors = entity.map { HttpStatusCode.fromValue(it.responseStatusCode ?: 404) }.filter { !it.isSuccess() }
+                    val errorPercentage = errors.count() / entity.size * 100
+                    val latencies = entity.sumOf { it.latencyMs ?: 0 }
+                    TopConsumers(
+                        route = key,
+                        requests = entity.size,
+                        successRate = successes.count(),
+                        averageLatency = latencies / entity.size,
+                        errorRatePercent = errorPercentage
+                    )
+                }
+        }
+    }
+
+    private fun LocalTime.toHourAmPm(): String {
+        val hour = this.hour
+        val amPm = if (hour < 12) "AM" else "PM"
+        val hour12 = when {
+            hour == 0 -> 12
+            hour > 12 -> hour - 12
+            else -> hour
+        }
+        return "${hour12}${amPm}"
     }
 }

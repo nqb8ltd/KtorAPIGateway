@@ -17,7 +17,7 @@ object RequestLogTable : IntIdTable("request_log") {
     val startTimestamp       = datetime("start_timestamp").defaultExpression(CurrentDateTime) //done
     val endTimestamp       = datetime("end_timestamp").nullable() //done
 
-    val upstreamUrl = varchar("upstream_url", length = 100).nullable() // done
+    val upstreamUrl = text("upstream_url").nullable() // done
     val responseHeaders         = text("response_headers").nullable() // done
     val responseBody            = text("response_body").nullable() // done
     val responseStatusCode      = integer("response_status_code").nullable() //done
