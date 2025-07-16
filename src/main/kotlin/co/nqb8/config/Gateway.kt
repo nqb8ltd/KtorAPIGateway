@@ -35,7 +35,7 @@ fun Routing.dashboardApis(dashboardUseCase: DashboardUseCase, forwarder: Forward
                 call.respondSuccess(message = "Statistics fetched successfully", data = dashboardHome)
             }
             get("/traces"){
-                val page = call.queryParameters["page"]?.toIntOrNull() ?: 0
+                val page = call.queryParameters["page"]?.toIntOrNull() ?: 1
                 val count = call.queryParameters["count"]?.toIntOrNull() ?: 20
                 call.respondSuccess(
                     message = "Statistics fetched successfully",

@@ -51,7 +51,7 @@ data class Trace(
     val authType: AuthType,
     val authSuccess: Boolean,
 )
-
+@Serializable
 data class TopConsumers(
     val route: String,
     val requests: Int,

@@ -67,7 +67,7 @@ class DashboardUseCase(
 
     suspend fun getTracesByPage(page: Int, count: Int): List<Trace>{
         return newSuspendedTransaction {
-            RequestLogEntity.all().offset(page.toLong()).limit(count).map {
+            RequestLogEntity.all().limit(count).offset(((page - 1L) * count)).map {
                 Trace(
                     id = it.uuid.toString(),
                     route = it.path,
