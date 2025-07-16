@@ -7,6 +7,7 @@ import co.nqb8.data.dto.RequestLogTable
 import co.nqb8.gateway.routes
 import io.ktor.http.*
 import kotlinx.datetime.*
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.selectAll
@@ -37,7 +38,7 @@ class DashboardUseCase(
             }.count()
             val last24HourIncreasePercent = (requestBy48hrs.toDouble() / requestBy24hrs.count()) * 100
             val requestBy7hrs = requestRepository.find { RequestLogTable.createdAt greaterEq last7hrs }
-                .groupBy { it.updatedAt.hour }
+                .groupBy { it.createdAt.hour }
                 .map {
                     val time = LocalTime(it.key, 0)
                     FlowChart(title = time.toHourAmPm(), value = it.value.size.toLong())
@@ -91,7 +92,7 @@ class DashboardUseCase(
         return pagedQuery(
             page = page,
             count = count,
-            queryOp = { RequestLogEntity.all() },
+            queryOp = { RequestLogEntity.all().orderBy(RequestLogTable.createdAt to SortOrder.DESC) },
             transform = {
                 Trace(
                     id = it.uuid.toString(),
