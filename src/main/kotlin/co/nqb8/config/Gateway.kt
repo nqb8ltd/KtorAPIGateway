@@ -40,11 +40,11 @@ fun Routing.dashboardApis(dashboardUseCase: DashboardUseCase, forwarder: Forward
 
                 call.respondSuccess(
                     message = "Statistics fetched successfully",
-                    data = dashboardUseCase.getTracesByPage(count, page)
+                    data = dashboardUseCase.getTracesByPage(page = page, count = count)
                 )
             }
             get("/top-consumers"){
-                val hours = call.queryParameters["hour"]?.toIntOrNull()
+                val hours = call.queryParameters["hours"]?.toIntOrNull()
                 val days = call.queryParameters["days"]?.toIntOrNull()
                 val weeks = call.queryParameters["weeks"]?.toIntOrNull()
                 val months = call.queryParameters["months"]?.toIntOrNull()

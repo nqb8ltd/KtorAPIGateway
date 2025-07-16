@@ -131,6 +131,7 @@ class DashboardUseCase(
                         errorRatePercent = errorPercentage
                     )
                 }
+                .sortedByDescending { it.requests }
         }
     }
 
