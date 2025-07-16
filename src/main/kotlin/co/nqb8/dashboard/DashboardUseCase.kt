@@ -9,6 +9,7 @@ import io.ktor.http.*
 import kotlinx.datetime.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.time.Duration.Companion.hours
 
@@ -65,9 +66,33 @@ class DashboardUseCase(
         }
     }
 
-    suspend fun getTracesByPage(page: Int, count: Int): List<Trace>{
-        return newSuspendedTransaction {
-            RequestLogEntity.all().limit(count).offset(((page - 1L) * count)).map {
+//    suspend fun getTracesByPage(page: Int, count: Int): List<Trace>{
+//        return newSuspendedTransaction {
+//            RequestLogEntity.all().limit(count).offset(((page - 1L) * count)).map {
+//                Trace(
+//                    id = it.uuid.toString(),
+//                    route = it.path,
+//                    status = HttpStatusCode.fromValue(it.responseStatusCode ?: 404).isSuccess(),
+//                    duration = it.latencyMs ?: 0,
+//                    timeStamp = it.createdAt,
+//                    method = it.httpMethod,
+//                    sourceIp = it.clientIp,
+//                    headers = it.requestHeaders,
+//                    upstreamDuration = it.responseTime ?: 0,
+//                    requestBody = it.requestBody.orEmpty(),
+//                    responseBody = it.responseBody.orEmpty(),
+//                    authType = it.authType,
+//                    authSuccess = it.authenticationSuccess
+//                )
+//            }
+//        }
+//    }
+    suspend fun getTracesByPage(page: Int, count: Int): PagedResult<Trace> {
+        return pagedQuery(
+            page = page,
+            count = count,
+            queryOp = { RequestLogEntity.all() },
+            transform = {
                 Trace(
                     id = it.uuid.toString(),
                     route = it.path,
@@ -83,8 +108,8 @@ class DashboardUseCase(
                     authType = it.authType,
                     authSuccess = it.authenticationSuccess
                 )
-            }
-        }
+            },
+        )
     }
 
     suspend fun getTopConsumersByHrs(hours: Int = 24): List<TopConsumers>{
