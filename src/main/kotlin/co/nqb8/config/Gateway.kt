@@ -77,6 +77,11 @@ fun Routing.dashboardApis(dashboardUseCase: DashboardUseCase, forwarder: Forward
                 startGateway(listOf(service), forwarder)
                 call.respondSuccess(message = "", data = response)
             }
+            put("/route"){
+                val service = call.receive<Service>()
+                val response = findAndUpdateOrCreateRoute(service)
+                call.respondSuccess(message = "", data = response)
+            }
         }
 
         //get-routes

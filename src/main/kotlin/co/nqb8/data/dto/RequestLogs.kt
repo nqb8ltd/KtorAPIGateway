@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
 object RequestLogTable : IntIdTable("request_log") {
     val uuid = uuid("uuid").uniqueIndex()
-    val clientIp        = varchar("client_ip", length = 20)
+    val clientIp        = text("client_ip")
     val httpMethod      = text("http_method")
     val path            = text("path")
     val requestHeaders  = text("request_headers")

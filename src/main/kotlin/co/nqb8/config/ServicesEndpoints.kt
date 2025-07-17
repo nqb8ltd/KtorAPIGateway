@@ -36,12 +36,6 @@ fun Application.servicesApi(forwarder: Forwarder) {
                 call.respondSuccess(message = "Service updated successfully", data = result)
                 startGateway(newServices, forwarder)
             }
-//            delete("/_services") {
-//                val services = Path("../data/services.json").toFile()
-//                services.delete()
-//                call.respond(HttpStatusCode.Created)
-//            }
-
             get("/_routes"){
                 val mappedRoutes = routes.map {
                     KateRoutes(
@@ -83,6 +77,36 @@ internal fun findAndUpdateOrCreateService(services: List<Service>): List<Service
     writeCurrentServices(newOnes)
     return newOnes
 }
+
+internal fun findAndUpdateOrCreateRoute(serviceToUpdate: Service): List<Service> {
+    val services =  currentServices().map { currentService ->
+        if (currentService.name == serviceToUpdate.name) {
+            // Update routes in this matching service
+            val updatedRoutes = serviceToUpdate.routes.fold(currentService.routes) { acc, incomingRoute ->
+                // Try to find an existing route by some unique field, e.g. `path`
+                val existingIndex = acc.indexOfFirst { it.uri == incomingRoute.uri && it.methods?.containsAll(incomingRoute.methods.orEmpty()) == true }
+                if (existingIndex != -1) {
+                    // Replace or merge the existing route
+                    acc.toMutableList().apply { this[existingIndex] = incomingRoute }
+                } else {
+                    // Add as new
+                    acc + incomingRoute
+                }
+            }
+            currentService.copy(routes = updatedRoutes)
+        } else {
+            // Not the service we’re updating — leave untouched
+            currentService
+        }
+    }.let { updatedServices ->
+        // If the service didn’t exist at all, add it
+        val serviceExists = updatedServices.any { it.name == serviceToUpdate.name }
+        if (serviceExists) updatedServices else updatedServices + serviceToUpdate
+    }
+    writeCurrentServices(services)
+    return services
+}
+
 
 internal fun currentServices(): List<Service> {
     val path = Path(SERVICE_FILE)
