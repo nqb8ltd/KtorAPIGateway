@@ -33,6 +33,7 @@ private fun Application.auth() {
     install(GatewayAuthentication)
     install(GatewayAuthorization)
     val apikey = environment.config.property("gateway.apikey").getString()
+    log.info("API KEY: $apikey")
     install(Authentication) {
         bearer("gateway-auth") {
             realm = "Access to the '/_' path"
