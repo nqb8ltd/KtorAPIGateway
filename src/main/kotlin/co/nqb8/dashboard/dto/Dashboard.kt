@@ -39,7 +39,7 @@ data class FlowChart(
 data class Trace(
     val id: String,
     val route: String,
-    val status: Boolean,
+    val status: Int,
     val duration: Long,
     val timeStamp: LocalDateTime,
     val method: String,

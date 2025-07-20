@@ -97,7 +97,7 @@ class DashboardUseCase(
                 Trace(
                     id = it.uuid.toString(),
                     route = it.path,
-                    status = HttpStatusCode.fromValue(it.responseStatusCode ?: 404).isSuccess(),
+                    status = it.responseStatusCode ?: 404,
                     duration = it.latencyMs ?: 0,
                     timeStamp = it.createdAt,
                     method = it.httpMethod,
