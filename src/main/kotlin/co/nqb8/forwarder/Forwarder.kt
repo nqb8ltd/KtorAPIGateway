@@ -84,6 +84,7 @@ class Forwarder {
 //        }
         val formRequest = client.request(path) {
             method = HttpMethod.Post
+            addHeaders(heads, origin)
             val body = when {
                 form != null -> FormDataContent(form)
                 else -> MultiPartFormDataContent(multipart.toPartData())
