@@ -61,22 +61,34 @@ class Forwarder {
         form: Parameters? = null,
         multipart: MultiPartData? = null,
     ): HttpResponse = withContext(Dispatchers.IO) {
-        val formRequest = when{
-            form != null -> {
-                client.submitForm(
-                    url = path,
-                    formParameters = form,
-                    block = { addHeaders(heads, origin) }
-                )
+//        val formRequest = when{
+//            form != null -> {
+////                client.submitForm(path) {
+////                    addHeaders(heads, origin)
+////                    setBody(form)
+////                }
+//                client.submitForm(
+//                    url = path,
+//                    formParameters = form,
+//                    block = { addHeaders(heads, origin) }
+//                )
+//            }
+//            else -> {
+//                val partData = multipart.toPartData()
+//                client.submitFormWithBinaryData(
+//                    url = path,
+//                    formData = partData,
+//                    block = { addHeaders(heads, origin) }
+//                )
+//            }
+//        }
+        val formRequest = client.request(path) {
+            method = HttpMethod.Post
+            val body = when {
+                form != null -> FormDataContent(form)
+                else -> MultiPartFormDataContent(multipart.toPartData())
             }
-            else -> {
-                val partData = multipart.toPartData()
-                client.submitFormWithBinaryData(
-                    url = path,
-                    formData = partData,
-                    block = { addHeaders(heads, origin) }
-                )
-            }
+            setBody(body)
         }
         formRequest
     }
