@@ -23,6 +23,7 @@ class SingleRoutePipeline(
 ): Pipeline {
 
     override suspend fun pipe(call: RoutingCall,  route: Route) {
+        println("Route: ${route.methods}")
         val forwarded = when(method.requestBodyType){
             Route.RequestBodyType.JSON -> {
                 val json = runCatching { call.receive<JsonElement>() }.getOrNull()
@@ -47,6 +48,10 @@ class SingleRoutePipeline(
                     it.upstreamUrl = "$baseUrl${call.request.uri}"
                 }
                 kotlin.runCatching {
+                    println("Route ${route.uri}")
+                    form?.forEach { key, value ->
+                        println("Key: $key Value: $value")
+                    }
                     forwarder.routePart(
                         path = "$baseUrl${call.request.uri}",
                         heads = call.request.headers,
