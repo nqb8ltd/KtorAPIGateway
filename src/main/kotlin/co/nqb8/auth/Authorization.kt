@@ -29,6 +29,7 @@ val GatewayAuthorization = createApplicationPlugin("GatewayAuthorization"){
         for (registry in AuthProviders){
             if (call.isHandled) return@on
             if (!uriMatches(registry.key, call.request.uri)) continue
+            if (registry.value.policy == AuthenticationPolicy.Policy.PRESENT) continue
             authorize(call, registry.value, registry.key)
         }
     }
