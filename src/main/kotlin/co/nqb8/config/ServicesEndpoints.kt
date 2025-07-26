@@ -18,6 +18,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import kotlin.io.path.Path
 import kotlin.io.path.createFile
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
@@ -35,6 +36,10 @@ fun Application.servicesApi(forwarder: Forwarder) {
                 val result = findAndUpdateOrCreateService(newServices)
                 call.respondSuccess(message = "Service updated successfully", data = result)
                 startGateway(newServices, forwarder)
+            }
+            delete("/_services") {
+                Path(SERVICE_FILE).deleteExisting()
+                call.respondSuccess("Service deleted successfully")
             }
             get("/_routes"){
                 val mappedRoutes = routes.map {
