@@ -13,6 +13,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.plugins.callid.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.plugins.doublereceive.DoubleReceive
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.util.*
@@ -68,7 +69,6 @@ private fun Application.cors() {
 
 private fun Application.rateLimit() {
     install(GatewayRateLimit)
-
 }
 
 @OptIn(ExperimentalUuidApi::class)
@@ -84,6 +84,7 @@ private fun Application.callId() {
 }
 
 private fun Application.statusPages() {
+    install(DoubleReceive)
     install(StatusPages) {
         status(HttpStatusCode.TooManyRequests) { call, status ->
             val retryAfter = call.response.headers["Retry-After"]

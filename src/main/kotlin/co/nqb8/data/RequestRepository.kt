@@ -30,7 +30,8 @@ class RequestRepository(
         httpMethod: String,
         path: String,
         requestHeaders: String,
-        query: String
+        query: String,
+        body: String
     ) {
         scope.launch(Dispatchers.IO) {
             newSuspendedTransaction(Dispatchers.IO) {
@@ -41,6 +42,7 @@ class RequestRepository(
                     this.path = path
                     this.requestHeaders = requestHeaders
                     this.queryParams = query
+                    this.requestBody = body
                 }
             }
         }

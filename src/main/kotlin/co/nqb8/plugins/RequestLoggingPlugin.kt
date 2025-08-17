@@ -1,7 +1,9 @@
 package co.nqb8.plugins
 
 import co.nqb8.data.RequestRepository
+import co.nqb8.data.dto.RequestLogTable.requestBody
 import co.nqb8.data.requestRepository
+import io.ktor.http.ContentType
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
 import io.ktor.server.plugins.*
@@ -26,7 +28,18 @@ val RequestLogging = createApplicationPlugin(name = "RequestLoggingPlugin") {
         val path = call.request.uri
         val requestHeaders = Json.encodeToString(call.request.headers.toMap())
         val queryParams = Json.encodeToString(call.request.rawQueryParameters.toMap())
-        requestRepository.createRequestLog(requestId, clientIp, httpMethod, path, requestHeaders, queryParams)
+        val body = if (call.request.contentType() in listOf(ContentType.Application.Json, ContentType.Application.FormUrlEncoded)) {
+            runCatching { Json.encodeToString(call.receiveText()) }.getOrElse { "" }
+        }else ""
+        requestRepository.createRequestLog(
+            requestId = requestId,
+            clientIp = clientIp,
+            httpMethod = httpMethod,
+            path = path,
+            requestHeaders = requestHeaders,
+            query = queryParams,
+            body = body
+        )
 
     }
     on(ResponseSent){ call ->
